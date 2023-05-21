@@ -14,6 +14,10 @@ static void keyup(SDL_KeyboardEvent *event) {
   }
 }
 
+static void mousedown(SDL_MouseButtonEvent *event) {}
+static void mouseup(SDL_MouseButtonEvent *event) {}
+static void mousemotion(SDL_MouseMotionEvent *event) {}
+
 void event_loop() {
   while (SDL_PollEvent(&AppInstance.m_event)) {
     switch (AppInstance.m_event.type) {
@@ -25,6 +29,15 @@ void event_loop() {
       break;
     case SDL_KEYUP:
       keyup(&(AppInstance.m_event).key);
+      break;
+    case SDL_MOUSEBUTTONDOWN:
+      mousedown(&(AppInstance.m_event).button);
+      break;
+    case SDL_MOUSEBUTTONUP:
+      mouseup(&(AppInstance.m_event).button);
+      break;
+    case SDL_MOUSEMOTION:
+      mousemotion(&(AppInstance.m_event).motion);
       break;
     }
   }

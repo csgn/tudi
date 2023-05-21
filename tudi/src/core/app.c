@@ -10,6 +10,7 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,6 +34,13 @@ void destroy_application(bool exit_status) {
   exit(exit_status);
 }
 
+static void tick(float *deltaTime, uint32_t *prevTime) {
+  uint32_t currentTime = SDL_GetTicks();
+  *deltaTime =
+      (currentTime - *prevTime) / 1000.0f; // Convert milliseconds to seconds
+  *prevTime = currentTime;
+}
+
 static void run_application() {
   // log info
 
@@ -46,7 +54,17 @@ static void run_application() {
     o->cb__onStart(&AppInstance);
   }
 
+  uint32_t prevTime = SDL_GetTicks();
+  float deltaTime = 0.0f;
+
   while (AppInstance.m_running) {
+    tick(&deltaTime, &prevTime);
+    AppInstance.m_delta = deltaTime;
+
+    char text[128];
+    float fps = 1.0f / AppInstance.m_delta;
+    printf("FPS: %.1f\r", fps);
+
     SDL_SetRenderDrawColor(AppInstance.m_renderer, 0, 0, 0, 0);
     SDL_RenderClear(AppInstance.m_renderer);
 
@@ -104,6 +122,8 @@ static void create_application() {
   AppInstance.m_renderer = renderer;
   AppInstance.m_object_count = 0;
   AppInstance.m_objects = (SharedObject **)malloc(sizeof(SharedObject *));
+  AppInstance.m_winW = APP_WINDOW_WIDTH;
+  AppInstance.m_winH = APP_WINDOW_HEIGHT;
   memset(AppInstance.m_objects, 0, sizeof(SharedObject **));
 }
 

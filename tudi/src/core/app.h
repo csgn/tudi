@@ -21,6 +21,9 @@ typedef struct {
   SharedObject **m_objects;
   uint m_object_count;
   uint m_keys[350];
+  uint m_winW;
+  uint m_winH;
+  float m_delta;
 } Application;
 
 void destroy_application(bool);
