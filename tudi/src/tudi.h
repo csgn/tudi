@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "./core/app.h"
+
 #endif
 
 #endif // __TUDI_H__

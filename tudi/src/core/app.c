@@ -1,16 +1,22 @@
 #include "app.h"
+#include "event.h"
+#include "loader.h"
+#include "object.h"
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_error.h>
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_loadso.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 Application AppInstance;
 
-static void destroy_application(bool exit_status) {
+void destroy_application(bool exit_status) {
   if (AppInstance.m_window) {
     // log info
     SDL_DestroyWindow(AppInstance.m_window);
@@ -30,19 +36,35 @@ static void destroy_application(bool exit_status) {
 static void run_application() {
   // log info
 
-  SDL_Event m_event;
+  load_objects("./game/");
+
+  int i = 0;
+  SharedObject *o;
+  for (i = 0; (o = AppInstance.m_objects[i]) && o != NULL &&
+              i < AppInstance.m_object_count;
+       i++) {
+    o->cb__onStart(&AppInstance);
+  }
+
   while (AppInstance.m_running) {
     SDL_SetRenderDrawColor(AppInstance.m_renderer, 0, 0, 0, 0);
     SDL_RenderClear(AppInstance.m_renderer);
 
-    /**************** BEGIN  *****************/
+    // EVENT
+    event_loop();
 
-    while (SDL_PollEvent(&m_event)) {
-      switch (m_event.type) {
-      case SDL_QUIT:
-        destroy_application(EXIT_SUCCESS);
-        break;
-      }
+    // UPDATE
+    for (i = 0; (o = AppInstance.m_objects[i]) && o != NULL &&
+                i < AppInstance.m_object_count;
+         i++) {
+      o->cb__onUpdate();
+    }
+
+    // RENDER
+    for (i = 0; (o = AppInstance.m_objects[i]) && o != NULL &&
+                i < AppInstance.m_object_count;
+         i++) {
+      o->cb__onRender();
     }
 
     /**************** END  *****************/
@@ -55,6 +77,7 @@ static void run_application() {
 static void create_application() {
   SDL_Window *window;
   SDL_Renderer *renderer;
+  SDL_Event event;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     // log error
@@ -76,8 +99,12 @@ static void create_application() {
   }
 
   AppInstance.m_running = true;
+  AppInstance.m_event = event;
   AppInstance.m_window = window;
   AppInstance.m_renderer = renderer;
+  AppInstance.m_object_count = 0;
+  AppInstance.m_objects = (SharedObject **)malloc(sizeof(SharedObject *));
+  memset(AppInstance.m_objects, 0, sizeof(SharedObject **));
 }
 
 int main(int argc, char **argv) {

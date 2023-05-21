@@ -18,7 +18,9 @@ $(BUILD_DIR)/%.c.o: %.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(LDLIBS) -c $< -o $@
 
-
 .PHONY: clean
 clean:
 	rm -r $(BUILD_DIR)
+
+
+export GAME_DIR=./game
